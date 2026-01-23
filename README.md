@@ -16,6 +16,7 @@ terminal UIs powered by ANSI-aware widgets.
   Clark remembers what it has already parsed and only consumes the remaining args.
 - **Action builder** – `ActionBuilder` prompts the user to pick an action and dispatches to the
   matching handler, letting you script multi-step workflows declaratively.
+- **Async action builder** – `AsyncActionBuilder` offers the same workflow with async handlers.
 - **Mini TUI toolkit** – The `tui` module (with helpers like the `paragraph!` macro) gives you just
   enough to draw colored text, stacks, and paragraphs when printing help or errors.
 
@@ -101,6 +102,9 @@ ActionBuilder::new(&mut app, Some("Choose how to run the stack".into()))
 The builder injects a positional argument with auto-generated help containing the available
 actions. When the user chooses one, the corresponding handler can register more arguments (see
 `examples/main.rs` for a longer flow that configures docker containers and spawns processes).
+
+When you need async handlers, enable the `async` feature and use `AsyncActionBuilder` with
+`AsyncActionHandler` (its `run` method is `async`).
 
 ## Terminal UI surfaces
 
