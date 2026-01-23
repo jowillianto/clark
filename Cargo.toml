@@ -1,17 +1,23 @@
 [package]
 name = "clark"
-version = "1.0.3"
+version = "1.0.4"
 edition = "2024"
 
 [lib]
 crate-type = ["rlib"]
 
 [dependencies]
+async-trait = { version = "0.1.89", optional = true }
 chrono = "0.4.42"
+pyo3 = { version = "0.27.2", optional = true }
 
 [features]
-default = ["log"]
-log = []
+default = []
+log = ["tui"]
+app = ["tui"]
+tui = []
+async = ["dep:async-trait", "app"]
+py = ["dep:pyo3"]
 
 
 [[example]]
