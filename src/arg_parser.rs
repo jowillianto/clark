@@ -25,12 +25,12 @@ impl ParamTier {
         self.params.iter()
     }
 
-    fn parse_params(
+    fn parse_params<I: Iterator<Item = String>>(
         &self,
         key: &ArgKey,
         value: Option<&str>,
         args: &mut ParsedArg,
-        raw_args: &mut Peekable<std::env::Args>,
+        raw_args: &mut Peekable<I>,
     ) -> Result<bool, ParseError> {
         for (arg_key, arg) in self.params_iter() {
             if arg_key == key {
@@ -55,11 +55,11 @@ impl ParamTier {
         Ok(false)
     }
 
-    pub fn parse(
+    pub fn parse<I: Iterator<Item = String>>(
         &self,
         pos_id: usize,
         args: &mut ParsedArg,
-        raw_args: &mut Peekable<std::env::Args>,
+        raw_args: &mut Peekable<I>,
         parse_positional: bool,
     ) -> Result<(), ParseError> {
         if parse_positional && let Some(current_arg) = raw_args.peek() {
@@ -142,10 +142,10 @@ impl ArgParser {
         self.args.is_empty()
     }
 
-    pub fn incremental_parse(
+    pub fn incremental_parse<I: Iterator<Item = String>>(
         &self,
         args: &mut ParsedArg,
-        raw_args: &mut Peekable<std::env::Args>,
+        raw_args: &mut Peekable<I>,
     ) -> Result<(), ParseError> {
         let arg_beg_id = match args.len() {
             0 => 0,
@@ -156,7 +156,11 @@ impl ArgParser {
         }
         Ok(())
     }
-    pub fn parse(&self, raw_args: &mut Peekable<std::env::Args>) -> Result<ParsedArg, ParseError> {
+
+    pub fn parse<I: Iterator<Item = String>>(
+        &self,
+        raw_args: &mut Peekable<I>,
+    ) -> Result<ParsedArg, ParseError> {
         let mut args = ParsedArg::new();
         self.incremental_parse(&mut args, raw_args)
             .map(move |()| args)

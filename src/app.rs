@@ -6,7 +6,7 @@ pub struct App {
     identity: AppIdentity,
     parser: ArgParser,
     parsed: ParsedArg,
-    raw_args: Peekable<std::env::Args>,
+    raw_args: Peekable<std::vec::IntoIter<String>>,
 }
 
 impl App {
@@ -15,7 +15,7 @@ impl App {
             identity,
             parser: ArgParser::new(),
             parsed: ParsedArg::new(),
-            raw_args: std::env::args().peekable(),
+            raw_args: std::env::args().collect::<Vec<_>>().into_iter().peekable(),
         }
     }
 
