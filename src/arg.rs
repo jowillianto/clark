@@ -1,6 +1,6 @@
 use crate::{ArgKey, ParseError, ParsedArg, paragraph, tui};
 
-pub trait ArgValidator {
+pub trait ArgValidator: Send {
     fn id(&self) -> Option<String> {
         None
     }
