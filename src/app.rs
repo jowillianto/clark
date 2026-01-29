@@ -90,9 +90,9 @@ impl App {
 
             /* Keyword Arguments */
             if tier.is_empty() {
-                section = section.append_child(paragraph!("  <no keyword arguments defined>"));
+                section = section.append_child(paragraph!("<no keyword arguments defined>"));
             } else {
-                section = section.append_child(paragraph!("  Keyword Arguments:"));
+                section = section.append_child(paragraph!("Keyword Arguments:"));
                 for (key, arg) in tier.params_iter() {
                     /* Title  */
                     let mut entry = tui::Layout::new().style(style.clone().indent(2));
