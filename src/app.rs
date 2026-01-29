@@ -77,20 +77,37 @@ impl App {
 
         for (idx, tier) in self.parser.iter().enumerate() {
             let mut section = tui::Layout::new().style(style.clone());
-            section = section.append_child(paragraph!("arg{idx}:"));
 
+            /* Parametric Argument  */
+            section = section.append_child(paragraph!("arg{idx}:"));
+            let mut section_child = tui::Layout::new().style(style.clone().indent(2));
+            if let Some(node) = ArgValidator::help(&tier.pos) {
+                section_child = section_child.append_child(node);
+            } else {
+                section_child = section_child.append_child(paragraph!("<no-help>"));
+            }
+            section = section.append_child(section_child);
+
+            /* Keyword Arguments */
             if tier.is_empty() {
                 section = section.append_child(paragraph!("  <no keyword arguments defined>"));
             } else {
                 section = section.append_child(paragraph!("  Keyword Arguments:"));
                 for (key, arg) in tier.params_iter() {
+                    /* Title  */
                     let mut entry = tui::Layout::new().style(style.clone().indent(2));
                     entry = entry.append_child(paragraph!("{}", key));
+
+                    /* Children  */
+                    let mut entry_child = tui::Layout::new().style(style.clone().indent(2));
                     if let Some(node) = ArgValidator::help(arg) {
-                        entry = entry.append_child(node);
+                        entry_child = entry_child.append_child(node);
                     } else {
-                        entry = entry.append_child(paragraph!("<no-help>"));
+                        entry_child = entry_child.append_child(paragraph!("<no-help>"));
                     }
+
+                    /* Add it back */
+                    entry = entry.append_child(entry_child);
                     section = section.append_child(tui::VStack(entry));
                 }
             }
