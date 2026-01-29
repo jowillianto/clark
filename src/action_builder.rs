@@ -72,7 +72,8 @@ impl<'a> ActionBuilder<'a> {
 
         app.parse_args(false);
 
-        if app.args().len() <= action_index {
+        let have_help = app.args().contains("-h") || app.args().contains("--help");
+        if app.args().len() <= action_index && !have_help {
             eprintln!(
                 "{}",
                 tui::VStack(
@@ -82,6 +83,9 @@ impl<'a> ActionBuilder<'a> {
                 )
             );
             std::process::exit(1)
+        } else if app.args().len() <= action_index && have_help {
+            app.print_help_text();
+            std::process::exit(0);
         }
 
         let action_name = app.args().arg().to_string();
