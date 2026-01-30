@@ -4,7 +4,7 @@ use crate::tui;
 use crate::{App, Arg, ArgOptionValidator, paragraph};
 
 #[async_trait]
-pub trait AsyncActionHandler {
+pub trait AsyncActionHandler: Send {
     async fn run(&mut self, app: &mut App);
 }
 
