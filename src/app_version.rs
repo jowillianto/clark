@@ -75,3 +75,34 @@ impl TryFrom<&str> for AppVersion {
         }
     }
 }
+
+#[cfg(feature = "serde")]
+impl serde::Serialize for AppVersion {
+    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        serializer.serialize_str(format!("{}", self).as_str())
+    }
+}
+
+#[cfg(feature = "serde")]
+struct AppVersionVisitor;
+
+#[cfg(feature = "serde")]
+impl serde::de::Visitor<'_> for AppVersionVisitor {
+    type Value = AppVersion;
+    fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+        write!(formatter, "expects string")
+    }
+    fn visit_str<E: serde::de::Error>(self, v: &str) -> Result<Self::Value, E> {
+        match AppVersion::try_from(v) {
+            Ok(v) => Ok(v),
+            Err(e) => Err(serde::de::Error::custom(e)),
+        }
+    }
+}
+
+#[cfg(feature = "serde")]
+impl<'de> serde::Deserialize<'de> for AppVersion {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        deserializer.deserialize_str(AppVersionVisitor)
+    }
+}

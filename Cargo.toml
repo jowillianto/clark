@@ -10,6 +10,7 @@ crate-type = ["rlib"]
 async-trait = { version = "0.1.89", optional = true }
 chrono = "0.4.42"
 pyo3 = { version = "0.27.2", optional = true }
+serde = { version = "1.0.228", optional = true }
 
 [features]
 default = []
@@ -18,6 +19,7 @@ app = ["tui"]
 tui = []
 async = ["dep:async-trait", "app"]
 py = ["dep:pyo3"]
+serde = ["dep:serde"]
 
 
 [[example]]
