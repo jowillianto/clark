@@ -33,3 +33,7 @@ path = "examples/csv_reader.rs"
 [[example]]
 name = "echo"
 path = "examples/echo.rs"
+
+[[example]]
+name = "async_actions"
+path = "examples/async_actions.rs"

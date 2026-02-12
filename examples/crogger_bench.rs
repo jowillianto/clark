@@ -125,6 +125,7 @@ fn main() {
         AppVersion::new(1, 0, 0),
     );
     let mut app = App::new(identity);
+    app.add_help_arguments();
 
     app.add_argument(
         "--count",
@@ -173,7 +174,6 @@ fn main() {
             )
             .optional(),
     );
-    app.add_help_arguments();
     app.parse_args(true);
 
     let args = app.args();

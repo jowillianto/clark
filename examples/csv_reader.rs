@@ -13,6 +13,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         )
         .author("Jonathan Willianto"),
     );
+    app.add_help_arguments();
 
     app.add_argument(
         "--csv",
@@ -28,7 +29,6 @@ fn main() -> Result<(), Box<dyn Error>> {
             .validate(ArgEmptyValidator::allow())
             .optional(),
     );
-    app.add_help_arguments();
     app.parse_args(true);
 
     let parsed = app.args();

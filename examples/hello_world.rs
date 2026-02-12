@@ -7,6 +7,7 @@ fn main() {
         AppVersion::new(0, 1, 0),
     );
     let mut app = App::new(identity);
+    app.add_help_arguments();
     app.add_argument(
         "--name",
         Arg::new()

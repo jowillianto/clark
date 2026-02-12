@@ -1,6 +1,9 @@
 use std::iter::Peekable;
 
-use crate::{AppIdentity, Arg, ArgParser, ArgValidator, ParsedArg, paragraph, tui};
+use crate::{
+    AppIdentity, Arg, ArgParser, ArgValidator, ParsedArg, paragraph,
+    tui::{self, RgbColor},
+};
 
 pub struct App {
     identity: AppIdentity,
@@ -55,66 +58,139 @@ impl App {
     }
 
     pub fn print_help_text(&mut self) {
-        let style = tui::DomStyle::new().fg(tui::RgbColor::bright_green());
-        let mut layout = tui::Layout::new().style(style.clone());
-        layout = layout.append_child(paragraph!(
-            "{} v{}",
-            self.identity.name,
-            self.identity.version
-        ));
+        let mut root_l = tui::Layout::new();
+
+        root_l = root_l.append_child(
+            tui::Layout::new()
+                .style(
+                    tui::DomStyle::new()
+                        .fg(RgbColor::blue())
+                        .effect(tui::TextEffect::Bold),
+                )
+                .append_child(paragraph!(
+                    "{} v{}",
+                    self.identity.name,
+                    self.identity.version
+                )),
+        );
 
         if !self.identity.description.is_empty() {
-            layout = layout.append_child(paragraph!("{}", &self.identity.description));
+            root_l = root_l.append_child(paragraph!("{}", &self.identity().description));
         }
         if let Some(author) = &self.identity.author {
-            layout = layout.append_child(paragraph!("Written by : {}", author));
+            root_l = root_l.append_child(paragraph!("Written by : {}", author));
         }
         if let Some(license) = &self.identity.license {
-            layout = layout.append_child(paragraph!("{}", license));
+            root_l = root_l.append_child(paragraph!("{}", license));
         }
+        root_l = root_l.append_child(
+            tui::Layout::new()
+                .style(
+                    tui::DomStyle::new()
+                        .fg(tui::RgbColor::blue())
+                        .effect(tui::TextEffect::Bold),
+                )
+                .append_child(match self.parser.len() {
+                    1 => paragraph!(""),
+                    _ => paragraph!("[ Arguments ]"),
+                }),
+        );
 
-        layout = layout.append_child(paragraph!(""));
-
+        let mut arg_l = tui::Layout::new();
         for (idx, tier) in self.parser.iter().enumerate() {
-            let mut section = tui::Layout::new().style(style.clone());
-
-            /* Parametric Argument  */
-            section = section.append_child(paragraph!("arg{idx}:"));
-            let mut section_child = tui::Layout::new().style(style.clone().indent(2));
-            if let Some(node) = ArgValidator::help(&tier.pos) {
-                section_child = section_child.append_child(node);
-            } else {
-                section_child = section_child.append_child(paragraph!("<no-help>"));
+            if idx != 0 {
+                arg_l = arg_l
+                    .append_child(
+                        tui::Layout::new()
+                            .style(
+                                tui::DomStyle::new()
+                                    .fg(tui::RgbColor::bright_magenta())
+                                    .effect(tui::TextEffect::Bold),
+                            )
+                            .append_child(paragraph!("arg{}", idx)),
+                    )
+                    .append_child(
+                        tui::Layout::new()
+                            .style(tui::DomStyle::new().indent(2))
+                            .append_child(match ArgValidator::help(&tier.pos) {
+                                Some(n) => n,
+                                None => paragraph!("[  No Help ]"),
+                            }),
+                    );
             }
-            section = section.append_child(section_child);
-
-            /* Keyword Arguments */
             if tier.is_empty() {
-                section = section.append_child(paragraph!("<no keyword arguments defined>"));
-            } else {
-                section = section.append_child(paragraph!("Keyword Arguments:"));
-                for (key, arg) in tier.params_iter() {
-                    /* Title  */
-                    let mut entry = tui::Layout::new().style(style.clone().indent(2));
-                    entry = entry.append_child(paragraph!("{}", key));
-
-                    /* Children  */
-                    let mut entry_child = tui::Layout::new().style(style.clone().indent(2));
-                    if let Some(node) = ArgValidator::help(arg) {
-                        entry_child = entry_child.append_child(node);
-                    } else {
-                        entry_child = entry_child.append_child(paragraph!("<no-help>"));
-                    }
-
-                    /* Add it back */
-                    entry = entry.append_child(entry_child);
-                    section = section.append_child(tui::VStack(entry));
-                }
+                arg_l = arg_l.append_child(paragraph!("[ No Keyword Arguments Defined ]"));
+                continue;
             }
-            layout = layout.append_child(tui::VStack(section));
-            layout = layout.append_child(paragraph!(""));
+            arg_l = arg_l.append_child(
+                tui::Layout::new()
+                    .style(
+                        tui::DomStyle::new()
+                            .fg(tui::RgbColor::bright_magenta())
+                            .effect(tui::TextEffect::Bold),
+                    )
+                    .append_child(paragraph!("[ Keyword Arguments ]")),
+            );
+            for (key, arg) in tier.params_iter() {
+                arg_l = arg_l.append_child(
+                    tui::Layout::new()
+                        .append_child(
+                            tui::Layout::new()
+                                .style(tui::DomStyle::new().fg(tui::RgbColor::green()))
+                                .append_child(paragraph!("{}", key)),
+                        )
+                        .append_child(
+                            tui::Layout::new()
+                                .style(tui::DomStyle::new().indent(2))
+                                .append_child(match ArgValidator::help(arg) {
+                                    Some(n) => n,
+                                    None => paragraph!("<no-help>"),
+                                }),
+                        ),
+                );
+            }
+
+            // let mut section = tui::Layout::new().style(style.clone());
+
+            // /* Parametric Argument  */
+            // section = section.append_child(paragraph!("arg{idx}:"));
+            // let mut section_child = tui::Layout::new().style(style.clone().indent(2));
+            // if let Some(node) = ArgValidator::help(&tier.pos) {
+            //     section_child = section_child.append_child(node);
+            // } else {
+            //     section_child = section_child.append_child(paragraph!("<no-help>"));
+            // }
+            // section = section.append_child(section_child);
+
+            // /* Keyword Arguments */
+            // if tier.is_empty() {
+            //     section = section.append_child(paragraph!("<no keyword arguments defined>"));
+            // } else {
+            //     section = section.append_child(paragraph!("Keyword Arguments:"));
+            //     for (key, arg) in tier.params_iter() {
+            //         /* Title  */
+            //         let mut entry = tui::Layout::new()
+            //             .style(tui::DomStyle::new().fg(tui::RgbColor::blue()).indent(2));
+            //         entry = entry.append_child(paragraph!("{}", key));
+
+            //         /* Children  */
+            //         let mut entry_child = tui::Layout::new().style(style.clone().indent(2));
+            //         if let Some(node) = ArgValidator::help(arg) {
+            //             entry_child = entry_child.append_child(node);
+            //         } else {
+            //             entry_child = entry_child.append_child(paragraph!("<no-help>"));
+            //         }
+
+            //         /* Add it back */
+            //         entry = entry.append_child(entry_child);
+            //         section = section.append_child(tui::VStack(entry));
+            //     }
+            // }
+            // layout = layout.append_child(tui::VStack(section));
+            // layout = layout.append_child(paragraph!(""));
         }
-        println!("{}", &tui::VStack(layout));
+        root_l = root_l.append_child(arg_l);
+        println!("{}", &tui::VStack(root_l));
     }
 
     pub fn parse_args(&mut self, auto_help: bool) -> &ParsedArg {
